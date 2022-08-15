@@ -18,8 +18,12 @@ const isSome = <T>(option: Option<T>): option is Some<T> => option.tag === 'Some
 const match = <T, R>(from: { some: (value: T) => R, none: () => R }) => (option: Option<T>): R =>
 	isSome(option) ? from.some(option.value) : from.none();
 
+const traversePromise = <A, B>(map: (value: A) => Promise<B>) => async (option: Option<A>): Promise<Option<B>> =>
+	isSome(option) ? some(await map(option.value)) : option;
+
 export const Option = {
 	some,
 	match,
-	none
+	none,
+	traversePromise
 };
