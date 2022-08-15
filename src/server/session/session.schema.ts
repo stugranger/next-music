@@ -1,13 +1,21 @@
 import z from 'zod';
 
-const AppSession = z.object({
+const AnonymousSessionProps = z.object({
 	accessToken: z.string().optional(),
 	accessTokenExpires: z.number().optional(),
 	codeVerifier: z.string().optional(),
 	refreshToken: z.string().optional(),
 	state: z.string().optional()
 });
-export type AppSession = z.infer<typeof AppSession>;
+
+const AuthorizedSessionProps = AnonymousSessionProps.extend({
+	accessToken: z.string(),
+	accessTokenExpires: z.number(),
+	refreshToken: z.string()
+});
+
+const SessionProps = z.union([AnonymousSessionProps, AuthorizedSessionProps]);
+export type SessionProps = z.infer<typeof SessionProps>;
 
 const CookieOptions= z.object({
 	domain: z.string().optional(),
@@ -28,4 +36,10 @@ const NextSession = z.object({
 	cookie: z.union([PersistentCookieOptions, CookieOptions])
 });
 
-export const Session = NextSession.merge(AppSession);
+const AnonymousSession = NextSession.merge(AnonymousSessionProps);
+
+const AuthorizedSession = NextSession.merge(AuthorizedSessionProps);
+export type AuthorizedSession = z.infer<typeof AuthorizedSession>;
+
+export const Session = z.union([AnonymousSession, AuthorizedSession]);
+export type Session = z.infer<typeof Session>;
